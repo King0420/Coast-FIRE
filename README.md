@@ -13,9 +13,6 @@
 
 ## 二、效果图
 <img width="955" height="763" alt="image" src="https://github.com/user-attachments/assets/098e116d-c993-41ac-ac2b-a3fe839506ab" />
-WalletBurst 的 Coast FIRE 计算器 页面是一个功能强大且直观的财务规划工具，旨在帮助用户计算：“我什么时候可以停止主动为退休攒钱，转而让现有的投资通过时间复利自然增长到退休目标？”
-
-
 
 ## 三、输入参数 (Input Fields)
 
