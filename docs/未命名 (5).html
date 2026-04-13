@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coast FIRE 计算器 | 轻松实现财务自由</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+    }
+    .container {
+      width: 100%;
+      min-height: 100vh;
+      background: white;
+      padding: 40px 30px;
+      box-shadow: none;
+    }
+    h1 {
+      font-size: 28px;
+      color: #1f2937;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .desc {
+      color: #4b5563;
+      margin-bottom: 40px;
+      line-height: 1.6;
+      text-align: center;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .main { grid-template-columns: 1fr; gap: 30px; }
+      .container { padding: 25px 20px; }
+    }
+    .form-group {
+      margin-bottom: 22px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #1f2937;
+    }
+    input[type="number"],
+    input[type="range"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    .result-box {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 24px 0;
+    }
+    .result-title {
+      font-size: 14px;
+      color: #4b5563;
+    }
+    .result-number {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1e40af;
+      margin: 6px 0;
+    }
+    .chart-wrap {
+      height: 460px;
+      position: relative;
+      margin-top: 10px;
+    }
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .tip {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 15px;
+      line-height: 1.5;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .row input[type="number"] {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Coast FIRE 计算器</h1>
+  <p class="desc">计算你需要多少本金，就能停止新增退休储蓄，仅靠复利增长到传统退休年龄，实现舒适退休。</p>
+
+  <div class="main">
+    <div class="left">
+      <div class="form-group">
+        <label>当前年龄</label>
+        <input type="number" id="currentAge" value="30" min="18" max="70">
+      </div>
+      <div class="form-group">
+        <label>计划退休年龄</label>
+        <input type="number" id="retireAge" value="65" min="50" max="80">
+      </div>
+      <div class="form-group">
+        <label>退休后年支出（今日币值）</label>
+        <input type="number" id="annualSpend" value="30000" min="0">
+      </div>
+      <div class="form-group">
+        <label>当前已投资资产</label>
+        <input type="number" id="currentAssets" value="250000" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>每月存入金额</label>
+        <input type="number" id="monthlyContribution" value="1000" min="0">
+      </div>
+
+      <div class="form-group">
+        <label>投资年化收益率</label>
+        <div class="row">
+          <input type="range" id="rate" min="1" max="20" value="7" step="0.5">
+          <input type="number" id="rateNum" value="7" min="1" max="20" step="0.5">
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>通货膨胀率</label>
+        <div class="row">
+          <input type="range" id="inflation" min="0" max="10" value="3" step="0.5">
+          <input type="number" id="inflationNum" value="3" min="0" max="10" step="0.5">
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>安全提款率 SWR</label>
+        <div class="row">
+          <input type="range" id="swr" min="1" max="10" value="4" step="0.5">
+          <input type="number" id="swrNum" value="4" min="1" max="10" step="0.5">
+          <span>%</span>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <div class="result-title">你的 Coast FIRE 目标金额（当前年龄）</div>
+        <div class="result-number" id="coastFireNumber">0</div>
+      </div>
+      <div class="result-box">
+        <div class="result-title">标准 FIRE 目标金额</div>
+        <div class="result-number" id="fireNumber">0</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+      <p class="tip">✅ <b>绿色</b>：持续存钱投资<br>✅ <b>蓝色</b>：Coast FIRE 门槛<br>✅ <b>灰色</b>：停止存钱后复利<br>✅ <b>紫色</b>：最终 FIRE 目标</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const rateInput = document.getElementById('rate');
+const inflationInput = document.getElementById('inflation');
+const swrInput = document.getElementById('swr');
+const rateNum = document.getElementById('rateNum');
+const inflationNum = document.getElementById('inflationNum');
+const swrNum = document.getElementById('swrNum');
+
+const currentAgeEl = document.getElementById('currentAge');
+const retireAgeEl = document.getElementById('retireAge');
+const annualSpendEl = document.getElementById('annualSpend');
+const currentAssetsEl = document.getElementById('currentAssets');
+const monthlyContributionEl = document.getElementById('monthlyContribution');
+const coastFireNumberEl = document.getElementById('coastFireNumber');
+const fireNumberEl = document.getElementById('fireNumber');
+
+let chart;
+initChart();
+calc();
+
+rateInput.addEventListener('input', () => {
+  rateNum.value = rateInput.value;
+  calc();
+});
+rateNum.addEventListener('input', () => {
+  rateInput.value = rateNum.value;
+  calc();
+});
+
+inflationInput.addEventListener('input', () => {
+  inflationNum.value = inflationInput.value;
+  calc();
+});
+inflationNum.addEventListener('input', () => {
+  inflationInput.value = inflationNum.value;
+  calc();
+});
+
+swrInput.addEventListener('input', () => {
+  swrNum.value = swrInput.value;
+  calc();
+});
+swrNum.addEventListener('input', () => {
+  swrInput.value = swrNum.value;
+  calc();
+});
+
+[currentAgeEl, retireAgeEl, annualSpendEl, currentAssetsEl, monthlyContributionEl].forEach(el => {
+  el.addEventListener('input', calc);
+});
+
+function calc() {
+  const currentAge = Number(currentAgeEl.value);
+  const retireAge = Number(retireAgeEl.value);
+  const annualSpend = Number(annualSpendEl.value);
+  const currentAssets = Number(currentAssetsEl.value);
+  const monthlyContribution = Number(monthlyContributionEl.value) || 0;
+  const rate = Number(rateNum.value) / 100;
+  const inflation = Number(inflationNum.value) / 100;
+  const swr = Number(swrNum.value) / 100;
+  const realRate = rate - inflation;
+  const years = retireAge - currentAge;
+  
+  const fireNumber = Math.round(annualSpend / swr);
+  const coastFireNumber = Math.round(fireNumber / Math.pow(1 + realRate, years));
+
+  fireNumberEl.textContent = '¥' + fireNumber.toLocaleString('zh-CN');
+  coastFireNumberEl.textContent = '¥' + coastFireNumber.toLocaleString('zh-CN');
+  
+  updateChart(currentAge, retireAge, currentAssets, monthlyContribution, coastFireNumber, fireNumber, realRate);
+}
+
+function initChart() {
+  const ctx = document.getElementById('chart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, padding: 15 } },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) label += ': ';
+              if (context.parsed.y !== null) {
+                label += '¥' + Math.round(context.parsed.y).toLocaleString();
+              }
+              return label;
+            }
+          }
+        }
+      },
+      scales: {
+        y: { 
+          beginAtZero: false,
+          ticks: { 
+            callback: v => '¥' + Math.round(v).toLocaleString()
+          }
+        },
+        x: { title: { display: true, text: '年龄' } }
+      },
+      onClick: function(e) {
+        const points = chart.getElementsAtEventForMode(
+          e, 'index', { intersect: false }, true
+        );
+        if (points.length) {
+          const index = points[0].index;
+          const age = chart.data.labels[index];
+          const invest = chart.data.datasets[0].data[index];
+          const coast = chart.data.datasets[1].data[index];
+          const coastGrow = chart.data.datasets[2].data[index];
+          const fire = chart.data.datasets[3].data[index];
+          
+          alert(`年龄：${age} 岁
+────────────────────
+✅ 持续存钱投资：¥${invest.toLocaleString()}
+✅ Coast FIRE 门槛：¥${coast.toLocaleString()}
+✅ 停止存钱后复利：¥${coastGrow.toLocaleString()}
+✅ 最终 FIRE 目标：¥${fire.toLocaleString()}`);
+        }
+      }
+    }
+  });
+}
+
+function updateChart(currentAge, retireAge, currentAssets, monthlyContribution, coastFire, fire, realRate) {
+  const ages = [];
+  const investLine = [];
+  const coastLine = [];
+  const coastGrowth = [];
+  const fireLine = [];
+  const monthlyRate = realRate / 12;
+
+  for (let age = currentAge; age <= retireAge; age++) {
+    ages.push(age);
+    const months = (age - currentAge) * 12;
+    
+    const p = currentAssets * Math.pow(1 + realRate, age - currentAge);
+    const c = monthlyContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) || 0;
+    
+    investLine.push(Math.round(p + c));
+    coastLine.push(Math.round(coastFire));
+    coastGrowth.push(Math.round(coastFire * Math.pow(1 + realRate, age - currentAge)));
+    fireLine.push(Math.round(fire));
+  }
+
+  chart.data.labels = ages;
+  chart.data.datasets = [
+    { label: '持续存钱投资', data: investLine, borderColor: '#047857', borderWidth: 3, fill: false, tension: 0.2 },
+    { label: 'Coast FIRE 门槛', data: coastLine, borderColor: '#3b82f6', borderWidth: 2, borderDash: [6,4], fill: false },
+    { label: '停止存钱后复利', data: coastGrowth, borderColor: '#6b7280', borderWidth: 2, fill: false, tension: 0.2 },
+    { label: '最终 FIRE 目标', data: fireLine, borderColor: '#8b5cf6', borderWidth: 2, borderDash: [3,3], fill: false }
+  ];
+  chart.update();
+}
+</script>
+</body>
+</html>
