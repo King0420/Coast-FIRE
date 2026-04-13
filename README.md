@@ -12,7 +12,7 @@
 <img width="730" height="384" alt="image" src="https://github.com/user-attachments/assets/60986747-72b5-487b-955b-b37ff069db3e" />
 
 ## 二、效果图
-<img width="955" height="763" alt="image" src="https://github.com/user-attachments/assets/098e116d-c993-41ac-ac2b-a3fe839506ab" />
+<img width="907" height="782" alt="image" src="https://github.com/user-attachments/assets/ca44c888-dcf9-4d6b-9f3c-e2f1a7fc3ef0" />
 
 ## 三、输入参数 (Input Fields)
 
