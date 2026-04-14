@@ -1,4 +1,4 @@
-# Coast-FIRE 经济独立，提前退休
+# Coast-FIRE 海岸FIRE
 
 > FIRE运动（Financial Independence, Retire Early；即经济独立，提前退休）是一种以经济独立和提前退休为目标，以及重视幸福感多于对物质的满足的一种生活方式。
 
